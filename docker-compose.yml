@@ -1,0 +1,20 @@
+services:
+  wise-mcp-public:
+    build: .
+    image: wise-mcp-public:1.0.0
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      WISE_PORT: "8000"
+    ports:
+      - "127.0.0.1:${MCP_PORT:-8080}:8000"
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    init: true
