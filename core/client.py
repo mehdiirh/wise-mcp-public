@@ -8,6 +8,7 @@ import httpx
 
 from core.config import Settings
 from core.policy import check_action
+from core.signing import MCPRequestSigner
 
 USER_AGENT = "wise-mcp-public/1.0.0"
 
@@ -54,6 +55,7 @@ class WiseClient:
         # A fresh client deliberately discards backend Set-Cookie headers per call.
         try:
             async with httpx.AsyncClient(
+                auth=MCPRequestSigner(self.settings.mcp_signing_secret.get_secret_value()),
                 timeout=self.settings.timeout_seconds,
                 follow_redirects=False,
                 trust_env=False,

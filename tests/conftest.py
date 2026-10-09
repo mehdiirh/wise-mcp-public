@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import httpx
@@ -6,6 +7,10 @@ import pytest
 
 from core.client import WiseClient
 from core.config import Settings
+
+# Synthetic test key only; set before importing the configured ASGI entry point.
+os.environ["WISE_MCP_SIGNING_SECRET"] = "ab" * 32
+
 from server import create_app
 
 ROOT = Path(__file__).resolve().parents[1]
