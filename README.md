@@ -8,12 +8,13 @@ A standalone, read-only MCP server for the **Wise advertising API** at
 
 ```sh
 cp sample.env .env
+# Set WISE_MCP_SIGNING_SECRET in .env as described below before starting.
 docker compose up --build -d
 curl --fail http://127.0.0.1:8080/healthz
 ```
 
-Defaults work against `https://api.wise.ad/api`. No shared API key or MCP secret
-is needed. Each client supplies its **own Wise token** in the connection's
+The default backend is `https://api.wise.ad/api`. Configure the server-only
+signing secret below. Each client supplies its **own Wise token** in the connection's
 `Authorization: Bearer <WISE_TOKEN>` header.
 
 - MCP URL: `http://127.0.0.1:8080/wise-mcp`
@@ -92,7 +93,50 @@ fails closed. There is no local token database, shared admin key, user-ID
 impersonation, cookie forwarding, or session credential reuse.
 
 Every backend request, including `get_me` token validation, sends
-`User-Agent: wise-mcp-public/1.0.0` so Wise can identify MCP-originated requests.
+`User-Agent: wise-mcp-public/1.0.0` and an HMAC signature. The User-Agent is a
+diagnostic label; only a verified signature establishes trusted MCP origin.
+
+## Configure verified backend logging
+
+Generate one 32-byte random key:
+
+```sh
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Set `WISE_MCP_SIGNING_SECRET` to that same 64-character hex value in the MCP
+server and Wise backend environments. Keep it in server-side secret storage;
+never distribute it to MCP clients or put it in tool arguments. This key signs
+requests; it does not replace the user's Wise bearer token or grant permissions.
+The MCP server refuses to start without a valid key.
+
+Deploy the backend verification code and apply its migration with
+`python manage.py migrate api` in the backend's configured environment, then
+restart both services. Existing request logs default to `is_mcp=False`.
+Verified requests are stored as `APIRequestLog.is_mcp=True`. Django admin hides
+them by default; the **MCP requests** filter can include them or show only MCP
+requests. A backend without the key continues serving ordinary API requests
+but cannot tag requests as verified MCP traffic.
+
+Each request sends `X-Wise-MCP-Timestamp` (Unix seconds) and
+`X-Wise-MCP-Signature` (`v1=` followed by an HMAC-SHA256 hex digest). The signature
+binds the HTTP method, path and query, content type, exact encoded body, bearer
+authorization, and timestamp. The key itself is never sent. Signature and
+authorization headers are redacted in backend request logs.
+
+The backend accepts signatures up to **60 seconds old**, allowing **5 seconds
+of future clock skew**. Keep both servers' clocks synchronized. There is no
+nonce storage or replay rejection: an identical signed request remains valid
+within this window. Invalid, missing, or expired signatures leave `is_mcp=False`
+and preserve normal API authentication. Copying the User-Agent or inventing a
+flag header cannot set `is_mcp=True` without the secret or a captured valid
+signed request. This proves passage through a trusted MCP deployment, not that
+an LLM initiated the request.
+
+Proxies must preserve the API path, query, body, content type, authorization,
+and both signature headers. Use HTTPS between services. Rotate the key in both
+environments together; requests using an old key will no longer be tagged.
+The versioned signing contract is in [`docs/signing.md`](docs/signing.md).
 
 ## Read-only boundary
 
@@ -176,6 +220,7 @@ Try asking: “Show my account summary”, “Compare my ad performance over 30 
 
 | Setting | Default | Purpose |
 | --- | --- | --- |
+| `WISE_MCP_SIGNING_SECRET` | Required | Server-only 64-character hex key shared with Wise backend |
 | `WISE_API_BASE_URL` | `https://api.wise.ad/api` | API root with mount prefix; HTTPS required except loopback development |
 | `WISE_TIMEOUT_SECONDS` | `30` | Upstream request timeout |
 | `WISE_MAX_RESPONSE_BYTES` | `4194304` | Maximum decoded response size |
@@ -218,7 +263,7 @@ Open `http://127.0.0.1:8765` for synthetic cards, charts, tables, empty/error
 states, and theme switching. The preview is loopback-only and needs no token.
 Tests mock the upstream API but exercise authenticated HTTP MCP calls for all
 23 tools, token isolation, input validation, write rejection, CSV handling,
-response limits, errors, and documentation coverage. Do not add a method merely
+request signatures, response limits, errors, and documentation coverage. Do not add a method merely
 because its name starts with `get`; review backend side effects and public
 parameter visibility, update the policy, and add coverage first.
 
@@ -226,6 +271,7 @@ parameter visibility, update the policy, and add coverage first.
 server.py              # MCP setup, ASGI app, health check, UI resource
 core/auth.py           # Backend token verification and request identity
 core/client.py         # Bounded HTTP calls and errors
+core/signing.py        # Timestamp-bound HMAC proof of server origin
 core/policy.py         # Exact read-only action/parameter allowlist
 services/              # Typed tool functions grouped by Wise service
 ui/results.html        # Self-contained MCP Apps result presentation
