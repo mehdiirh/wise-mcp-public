@@ -1,0 +1,337 @@
+[
+  {
+    "route": "/ad/",
+    "action": "get_ads",
+    "tool": "get_ads",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/ad/",
+    "action": "get_ad",
+    "tool": "get_ad",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/ad/",
+    "action": "ad_transactions",
+    "tool": "ad_transactions",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/ad/",
+    "action": "search_location",
+    "tool": "search_location",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/stats/ad/",
+    "action": "get_daily_ad_stats",
+    "tool": "get_daily_ad_stats",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/stats/ad/",
+    "action": "get_hourly_ad_stats",
+    "tool": "get_hourly_ad_stats",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/stats/ad/",
+    "action": "get_5min_ad_stats",
+    "tool": "get_5min_ad_stats",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/stats/ad/",
+    "action": "get_sum_ad_stats",
+    "tool": "get_sum_ad_stats",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/stats/user/",
+    "action": "summary",
+    "tool": "get_user_summary",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/user/",
+    "action": "get_me",
+    "tool": "get_me",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/user/",
+    "action": "get_user_payments",
+    "tool": "get_user_payments",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/user/",
+    "action": "referral_stats",
+    "tool": "referral_stats",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/currency/",
+    "action": "get_currencies",
+    "tool": "get_currencies",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/currency/",
+    "action": "get_currency",
+    "tool": "get_currency",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/payment/",
+    "action": "get_coins_price",
+    "tool": "get_coins_price",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/payment/",
+    "action": "get_currency_restrictions",
+    "tool": "get_currency_restrictions",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/autopilot/",
+    "action": "get_autopilot",
+    "tool": "get_autopilot",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/autopilot/",
+    "action": "get_autopilot_events",
+    "tool": "get_autopilot_events",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/utils/ad_template/",
+    "action": "get",
+    "tool": "get_ad_template",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/utils/ad_template/",
+    "action": "get_all",
+    "tool": "get_ad_templates",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/i18n/",
+    "action": "get_current_language",
+    "tool": "get_current_language",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/i18n/",
+    "action": "get_languages",
+    "tool": "get_languages",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/user/auth/",
+    "action": "get_geolocation",
+    "tool": "get_geolocation",
+    "decision": "include",
+    "reason": "Reviewed retrieval or pure calculation; no business-record mutation."
+  },
+  {
+    "route": "/ad/",
+    "action": "archive_ad",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/ad/",
+    "action": "check_ad_post",
+    "decision": "exclude",
+    "reason": "Creates or updates stored entities during lookup/validation."
+  },
+  {
+    "route": "/ad/",
+    "action": "create_ad",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/ad/",
+    "action": "decrease_ad_balance",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/ad/",
+    "action": "delete_ad",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/ad/",
+    "action": "generate_ad_text_with_ai",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/ad/",
+    "action": "generate_search_terms_with_ai",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/ad/",
+    "action": "get_custom_emoji",
+    "decision": "exclude",
+    "reason": "Creates or updates stored entities during lookup/validation."
+  },
+  {
+    "route": "/ad/",
+    "action": "get_similar_bots",
+    "decision": "exclude",
+    "reason": "Creates or updates stored entities during lookup/validation."
+  },
+  {
+    "route": "/ad/",
+    "action": "get_similar_channels",
+    "decision": "exclude",
+    "reason": "Creates or updates stored entities during lookup/validation."
+  },
+  {
+    "route": "/ad/",
+    "action": "increase_ad_balance",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/ad/",
+    "action": "search_bot",
+    "decision": "exclude",
+    "reason": "Creates or updates stored entities during lookup/validation."
+  },
+  {
+    "route": "/ad/",
+    "action": "search_channel",
+    "decision": "exclude",
+    "reason": "Creates or updates stored entities during lookup/validation."
+  },
+  {
+    "route": "/ad/",
+    "action": "search_target_query",
+    "decision": "exclude",
+    "reason": "Creates or updates stored entities during lookup/validation."
+  },
+  {
+    "route": "/ad/",
+    "action": "send_ad_to_review",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/ad/",
+    "action": "update_ad",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/ad/",
+    "action": "upload_media",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/utils/ad_template/",
+    "action": "create",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/utils/ad_template/",
+    "action": "delete",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/utils/ad_template/",
+    "action": "edit",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/user/auth/",
+    "action": "login",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/user/auth/",
+    "action": "logout",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/autopilot/",
+    "action": "bulk_configure_autopilot",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/autopilot/",
+    "action": "configure_autopilot",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/autopilot/",
+    "action": "resume_autopilot_ad",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/i18n/",
+    "action": "set_language",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/user/",
+    "action": "create_referral_prepared_message",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/user/",
+    "action": "transfer_coins",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  },
+  {
+    "route": "/user/",
+    "action": "update_user",
+    "decision": "exclude",
+    "reason": "Mutation, execution, generation, messaging, or authentication state change."
+  }
+]
