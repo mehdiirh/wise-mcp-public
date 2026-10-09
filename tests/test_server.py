@@ -11,6 +11,7 @@ from core.policy import READ_ACTIONS
 from server import create_server
 from services import UI_URI
 from tests.conftest import INCLUDED, POLICY, ROOT, app_with_backend, envelope
+from tests.test_signing import assert_signed
 
 HEADERS = {"Accept": "application/json, text/event-stream", "MCP-Protocol-Version": "2025-11-25"}
 
@@ -99,6 +100,7 @@ async def test_all_tools_through_authenticated_http(settings, entry):
 
     def handler(request):
         assert request.headers["user-agent"] == "wise-mcp-public/1.0.0"
+        assert_signed(request)
         action = parse_qs(request.content.decode())["method"][0]
         requests.append((str(request.url), action, request.headers["authorization"]))
         data = {"global_id": "u1", "is_active": True} if action == "get_me" else []

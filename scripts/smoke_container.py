@@ -1,8 +1,11 @@
 """Exercise the built image over real HTTP, using a loopback fake Wise backend."""
 
 import asyncio
+import hashlib
+import hmac
 import json
 import os
+import secrets
 import subprocess
 import threading
 import time
@@ -20,10 +23,32 @@ class Backend(BaseHTTPRequestHandler):
         pass
 
     def do_POST(self):
-        fields = parse_qs(self.rfile.read(int(self.headers["Content-Length"])).decode())
+        body = self.rfile.read(int(self.headers["Content-Length"]))
+        fields = parse_qs(body.decode())
         action = fields["method"][0]
         token = self.headers.get("Authorization")
         assert self.headers.get("User-Agent") == "wise-mcp-public/1.0.0"
+        timestamp = self.headers["X-Wise-MCP-Timestamp"]
+        assert -5 <= time.time() - int(timestamp) <= 60
+        payload = json.dumps(
+            [
+                "wise-mcp-v1",
+                "POST",
+                self.path,
+                self.headers["Content-Type"].lower(),
+                timestamp,
+                hashlib.sha256(body).hexdigest(),
+                hashlib.sha256(token.encode()).hexdigest(),
+            ],
+            separators=(",", ":"),
+        ).encode("ascii")
+        expected = (
+            "v1="
+            + hmac.new(
+                bytes.fromhex(os.environ["WISE_MCP_SIGNING_SECRET"]), payload, hashlib.sha256
+            ).hexdigest()
+        )
+        assert hmac.compare_digest(self.headers["X-Wise-MCP-Signature"], expected)
         assert not self.headers.get("Cookie")
         assert not self.headers.get("X-User-ID")
         seen.append((action, token))
@@ -73,6 +98,7 @@ async def check():
 
 
 if __name__ == "__main__":
+    os.environ["WISE_MCP_SIGNING_SECRET"] = secrets.token_hex(32)
     assert os.getuid() == 10001, "Smoke test must run with the image's non-root user"
     backend = ThreadingHTTPServer(("127.0.0.1", 9999), Backend)
     threading.Thread(target=backend.serve_forever, daemon=True).start()
