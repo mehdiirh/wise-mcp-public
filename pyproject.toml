@@ -1,0 +1,27 @@
+[project]
+name = "wise-mcp-public"
+version = "1.0.0"
+description = "Read-only MCP server for the Wise advertising public API"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastmcp>=3.4.8,<4",
+    "httpx>=0.28,<1",
+    "pydantic-settings>=2.8,<3",
+    "uvicorn>=0.35,<1",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-asyncio>=1,<2", "ruff>=0.12,<1", "asgi-lifespan>=2,<3"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
