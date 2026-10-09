@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wise · Results</title>
+<style>
+:root { color-scheme:light dark; --bg:#f6f8fb; --panel:#fff; --ink:#15283c; --muted:#617388; --line:#dfe6ef; --accent:#23776a; --soft:#e8f5f0; }
+@media(prefers-color-scheme:dark) { :root { --bg:#14202b; --panel:#1b2b39; --ink:#edf3fa; --muted:#a4b4c5; --line:#354655; --accent:#75d8bd; --soft:#203e38; } }
+:root[data-theme=light] { color-scheme:light; --bg:#f6f8fb; --panel:#fff; --ink:#15283c; --muted:#617388; --line:#dfe6ef; --accent:#23776a; --soft:#e8f5f0; }
+:root[data-theme=dark] { color-scheme:dark; --bg:#14202b; --panel:#1b2b39; --ink:#edf3fa; --muted:#a4b4c5; --line:#354655; --accent:#75d8bd; --soft:#203e38; }
+* { box-sizing:border-box } body { margin:0; padding:24px; background:var(--bg); color:var(--ink); font:14px/1.5 system-ui,sans-serif; }
+header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px; }
+.brand { color:var(--accent); letter-spacing:.15em; font-size:12px; font-weight:800; } h1 { font-size:23px; line-height:1.3; margin:5px 0; letter-spacing:-.04em; }
+.badge { padding:5px 10px; background:var(--soft); color:var(--accent); border-radius:20px; font-size:11px; white-space:nowrap; }
+.muted, #status { color:var(--muted); font-size:12px; } #status { margin:14px 0; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:14px 0; }
+.card { padding:18px; background:var(--panel); border:1px solid var(--line); border-radius:14px; min-width:0; }
+.label { color:var(--muted); font-size:12px; text-transform:capitalize; } .value { margin-top:6px; font-size:24px; font-weight:650; letter-spacing:-.03em; overflow-wrap:anywhere; } .value.text { font-size:15px; }
+.panel { padding:18px; background:var(--panel); border:1px solid var(--line); border-radius:14px; margin:12px 0; }
+.toolbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:14px 0; } input,button,select { font:inherit; color:inherit; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:8px 12px; } input { flex:1; min-width:120px; } button { cursor:pointer; } button[aria-pressed=true] { background:var(--soft); border-color:var(--accent); color:var(--accent); }
+.table-wrap { overflow:auto; max-height:430px; border:1px solid var(--line); border-radius:12px; background:var(--panel); } table { border-collapse:collapse; width:100%; text-align:left; font-size:12px; } th { position:sticky; top:0; background:var(--panel); color:var(--muted); white-space:nowrap; } th,td { padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:top; } th button { padding:0; border:0; font-weight:650; text-transform:capitalize; } td { max-width:320px; overflow-wrap:anywhere; } td pre { max-height:160px; }
+pre { white-space:pre-wrap; overflow-wrap:anywhere; font:12px/1.6 ui-monospace,monospace; margin:0; } details { margin:12px 0; } summary { cursor:pointer; color:var(--muted); } details > pre { max-height:350px; overflow:auto; margin-top:10px; } .empty { padding:32px 12px; text-align:center; color:var(--muted); } svg { width:100%; height:auto; display:block; } .axis { display:flex; justify-content:space-between; gap:12px; color:var(--muted); font-size:11px; margin-top:6px; } .error { color:#c15444; }
+@media(max-width:480px) { body { padding:14px; } h1 { font-size:20px; } .cards { grid-template-columns:repeat(2,minmax(0,1fr)); } .card { padding:12px; } .value { font-size:20px; } }
+</style>
+</head>
+<body>
+<header><div><div class="brand">WISE / INSIGHTS</div><h1 id="title">Your Wise data</h1></div><span class="badge">Read only</span></header>
+<main id="content" aria-live="polite"><p class="empty">Waiting for a tool result…</p></main>
+<p id="status" role="status">Data is delivered securely by your MCP host.</p>
+<script>
+(() => {
+  "use strict";
+  const root = document.getElementById("content");
+  const status = document.getElementById("status");
+  const title = document.getElementById("title");
+  const number = new Intl.NumberFormat(undefined, {maximumFractionDigits: 6});
+  let origin = null, ready = false;
+  const initId = "wise-init-" + Math.random().toString(36).slice(2);
+  const label = key => key.replaceAll("_", " ");
+  const isObject = value => value !== null && typeof value === "object" && !Array.isArray(value);
+  const text = value => value === null || value === undefined ? "Not available" :
+    typeof value === "boolean" ? (value ? "Yes" : "No") :
+    typeof value === "number" ? number.format(value) :
+    typeof value === "object" ? JSON.stringify(value, null, 2) : String(value);
+  function el(tag, value, cls) {
+    const node = document.createElement(tag);
+    if (value !== undefined) node.textContent = value;
+    if (cls) node.className = cls;
+    return node;
+  }
+  function send(message) {
+    // Opaque sandbox origins require '*'; incoming messages are pinned to the parent.
+    window.parent.postMessage({jsonrpc:"2.0", ...message}, origin && origin !== "null" ? origin : "*");
+  }
+  function theme(context) {
+    if (["light", "dark"].includes(context?.theme)) document.documentElement.dataset.theme = context.theme;
+  }
+  function cards(data) {
+    const grid = el("section", undefined, "cards");
+    for (const [key,value] of Object.entries(data)) {
+      if (value !== null && typeof value === "object") continue;
+      const card = el("div", undefined, "card");
+      card.append(el("div", label(key) + (key === "balance" ? " · coins" : ""), "label"),
+        el("div", text(value), "value" + (typeof value !== "number" ? " text" : "")));
+      grid.append(card);
+    }
+    root.append(grid);
+    for (const [key,value] of Object.entries(data)) {
+      if (value === null || typeof value !== "object") continue;
+      const details = el("details", undefined, "panel");
+      details.append(el("summary", label(key)), el("pre", text(value)));
+      root.append(details);
+    }
+  }
+  function table(rows) {
+    if (!rows.length) { root.append(el("p", "No records found.", "empty")); return; }
+    const objects = rows.map(row => isObject(row) ? row : {value:row});
+    const keys = [...new Set(objects.flatMap(row => Object.keys(row)))];
+    const toolbar = el("div", undefined, "toolbar");
+    const filter = el("input"); filter.type="search"; filter.placeholder="Filter this result…"; filter.setAttribute("aria-label", "Filter displayed records");
+    const count = el("span", undefined, "muted"); toolbar.append(filter,count);
+    const wrap = el("div", undefined, "table-wrap");
+    const t = el("table"), head = el("thead"), body = el("tbody"), headings = el("tr");
+    let sortKey = null, direction = 1;
+    for (const key of keys) {
+      const th=el("th"), button=el("button",label(key));
+      button.onclick=()=>{direction=sortKey===key ? -direction : 1;sortKey=key;draw();};
+      th.append(button);headings.append(th);
+    }
+    head.append(headings); t.append(head,body);wrap.append(t);root.append(toolbar,wrap);
+    function draw() {
+      const q = filter.value.toLocaleLowerCase();
+      const visible = objects.filter(row => JSON.stringify(row).toLocaleLowerCase().includes(q));
+      if (sortKey) visible.sort((a,b)=> {
+        const x=a[sortKey],y=b[sortKey];
+        return direction * (typeof x==="number" && typeof y==="number" ? x-y : text(x).localeCompare(text(y)));
+      });
+      body.replaceChildren();
+      for (const row of visible.slice(0,1000)) {
+        const tr=el("tr");
+        for (const key of keys) {
+          const td=el("td");
+          if (row[key] !== null && typeof row[key]==="object") {
+            const d=el("details");d.append(el("summary","Details"),el("pre",text(row[key])));td.append(d);
+          } else td.textContent=text(row[key]);
+          tr.append(td);
+        }
+        body.append(tr);
+      }
+      count.textContent = `${Math.min(visible.length,1000)} of ${objects.length} received records`;
+    }
+    filter.oninput=draw;draw();
+  }
+  function chart(rows) {
+    if (!rows.length) { root.append(el("p","No statistics for this period.","empty"));return; }
+    const ordered=[...rows].sort((a,b)=>String(a.datetime).localeCompare(String(b.datetime)));
+    const metrics=["views","clicks","joins"].filter(k=>ordered.some(r=>typeof r[k]==="number"));
+    if (!metrics.length) { table(rows);return; }
+    const totals={};for(const k of metrics) totals[k]=ordered.reduce((sum,r)=>sum+(typeof r[k]==="number"?r[k]:0),0);
+    cards(totals);
+    const panel=el("section",undefined,"panel"), controls=el("div",undefined,"toolbar"), plot=el("div");
+    panel.append(controls,plot);root.append(panel);
+    const buttons=[];
+    function draw(metric) {
+      for (const [key,button] of buttons) button.setAttribute("aria-pressed",String(key===metric));
+      plot.replaceChildren();
+      const values=ordered.map(r=>typeof r[metric]==="number" ? r[metric] : null);
+      const max=Math.max(1,...values.filter(v=>v!==null));
+      const ns="http://www.w3.org/2000/svg";
+      const svg=document.createElementNS(ns,"svg");svg.setAttribute("viewBox","0 0 760 220");svg.setAttribute("role","img");svg.setAttribute("aria-label",`${label(metric)} by time; missing values are gaps`);
+      for(let i=0;i<4;i++) {
+        const y=18+i*56;
+        const line=document.createElementNS(ns,"line");
+        for(const [k,v] of Object.entries({x1:58,x2:744,y1:y,y2:y,stroke:"var(--line)"}))line.setAttribute(k,v);
+        const tick=document.createElementNS(ns,"text");tick.setAttribute("x","0");tick.setAttribute("y",y+4);tick.setAttribute("fill","var(--muted)");tick.setAttribute("font-size","11");tick.textContent=number.format(Math.round(max*(1-i/3)));
+        svg.append(line,tick);
+      }
+      let path="",previous=false;
+      values.forEach((value,i)=> {
+        if(value===null){previous=false;return;}
+        const x=58+i*686/Math.max(1,values.length-1), y=186-value/max*168;
+        path+=`${previous?"L":"M"}${x},${y} `;previous=true;
+        const dot=document.createElementNS(ns,"circle");dot.setAttribute("cx",x);dot.setAttribute("cy",y);dot.setAttribute("r",values.length>100?"1.5":"3");dot.setAttribute("fill","var(--accent)");
+        const tip=document.createElementNS(ns,"title");tip.textContent=`${ordered[i].datetime}: ${text(value)} ${metric}`;dot.append(tip);svg.append(dot);
+      });
+      const line=document.createElementNS(ns,"path");line.setAttribute("d",path);line.setAttribute("fill","none");line.setAttribute("stroke","var(--accent)");line.setAttribute("stroke-width","2");svg.append(line);
+      const axis=el("div",undefined,"axis");axis.append(el("span",String(ordered[0].datetime??"")),el("span",String(ordered.at(-1).datetime??"")));
+      plot.append(svg,axis);
+    }
+    for(const metric of metrics) {const button=el("button",label(metric));button.onclick=()=>draw(metric);buttons.push([metric,button]);controls.append(button);}
+    draw(metrics[0]);
+    const details=el("details");details.append(el("summary",`${rows.length} data points · see raw values`),el("pre",text(rows)));root.append(details);
+  }
+  function render(result) {
+    root.replaceChildren();
+    if (result?.isError) {root.append(el("p",result.content?.find(x=>x.type==="text")?.text||"Unable to retrieve data.","error"));status.textContent="Request failed.";return;}
+    let payload=result?.structuredContent;
+    if(!payload) {try {payload=JSON.parse(result.content.find(x=>x.type==="text").text);}catch {root.append(el("p","This response cannot be displayed.","empty"));return;}}
+    const meta=result._meta||{};
+    title.textContent=meta["wise/title"]||"Wise results";
+    const data=payload.data;
+    if(payload.extra?.format==="csv")root.append(el("pre",String(data),"panel"));
+    else if(Array.isArray(data)) {
+      if(meta["wise/view"]==="chart")chart(data);else table(data);
+    } else if(isObject(data)) cards(data);
+    else root.append(el("p",text(data),"panel"));
+    const paging=payload.meta?.pagination;
+    status.textContent=paging ? `Page ${paging.current_page} · ${paging.total} total records${paging.has_next?" · More pages available; ask your assistant for the next page.":""}` : "Retrieved from Wise · Values reflect the API response.";
+    const raw=el("details");raw.append(el("summary","Full API response"),el("pre",JSON.stringify(payload,null,2)));root.append(raw);
+  }
+  window.addEventListener("message", event => {
+    if(event.source!==window.parent || window.parent===window) return;
+    const msg=event.data;
+    if(!msg || msg.jsonrpc!=="2.0")return;
+    if(origin!==null && event.origin!==origin)return;
+    if(msg.id===initId) {
+      if(!msg.result) {status.textContent="This host could not initialize the view.";return;}
+      origin=event.origin;ready=true;theme(msg.result.hostContext);
+      send({method:"ui/notifications/initialized",params:{}});return;
+    }
+    if(!ready)return;
+    if(msg.method==="ui/notifications/tool-result")render(msg.params);
+    if(msg.method==="ui/notifications/host-context-changed")theme(msg.params);
+    if(msg.method==="ui/notifications/tool-cancelled"){root.replaceChildren(el("p","Request cancelled.","empty"));status.textContent="No new data.";}
+    if(msg.id!==undefined) {
+      if(["ping","ui/resource-teardown"].includes(msg.method))send({id:msg.id,result:{}});
+      else send({id:msg.id,error:{code:-32601,message:"Method not supported"}});
+    }
+  });
+  if(window.parent!==window) send({id:initId,method:"ui/initialize",params:{protocolVersion:"2026-01-26",appInfo:{name:"wise-public-results",version:"1.0.0"},appCapabilities:{}}});
+  else status.textContent="Open this view through an MCP Apps host to display live results.";
+  let previousSize="";
+  new ResizeObserver(() => {
+    if(!ready)return;
+    const size={width:document.documentElement.clientWidth,height:document.body.scrollHeight};
+    const key=JSON.stringify(size);if(key===previousSize)return;previousSize=key;
+    send({method:"ui/notifications/size-changed",params:size});
+  }).observe(document.body);
+})();
+</script>
+</body>
+</html>
