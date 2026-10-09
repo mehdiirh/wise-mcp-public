@@ -91,6 +91,9 @@ closed; if Wise cannot validate a token during an outage, authentication also
 fails closed. There is no local token database, shared admin key, user-ID
 impersonation, cookie forwarding, or session credential reuse.
 
+Every backend request, including `get_me` token validation, sends
+`User-Agent: wise-mcp-public/1.0.0` so Wise can identify MCP-originated requests.
+
 ## Read-only boundary
 
 Wise uses **POST with a form-encoded `method` field even for reads**. Read-only

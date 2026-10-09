@@ -98,6 +98,7 @@ async def test_all_tools_through_authenticated_http(settings, entry):
     requests = []
 
     def handler(request):
+        assert request.headers["user-agent"] == "wise-mcp-public/1.0.0"
         action = parse_qs(request.content.decode())["method"][0]
         requests.append((str(request.url), action, request.headers["authorization"]))
         data = {"global_id": "u1", "is_active": True} if action == "get_me" else []

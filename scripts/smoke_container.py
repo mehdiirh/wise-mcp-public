@@ -23,6 +23,7 @@ class Backend(BaseHTTPRequestHandler):
         fields = parse_qs(self.rfile.read(int(self.headers["Content-Length"])).decode())
         action = fields["method"][0]
         token = self.headers.get("Authorization")
+        assert self.headers.get("User-Agent") == "wise-mcp-public/1.0.0"
         assert not self.headers.get("Cookie")
         assert not self.headers.get("X-User-ID")
         seen.append((action, token))

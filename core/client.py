@@ -9,6 +9,8 @@ import httpx
 from core.config import Settings
 from core.policy import check_action
 
+USER_AGENT = "wise-mcp-public/1.0.0"
+
 
 class WiseAPIError(Exception):
     def __init__(self, code: str, message: str, *, status: int = 502):
@@ -44,7 +46,11 @@ class WiseClient:
             if v is not None
         }
         form["method"] = action
-        headers = {"Authorization": f"Bearer {token}", "Accept": "application/json, text/csv"}
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/json, text/csv",
+            "User-Agent": USER_AGENT,
+        }
         # A fresh client deliberately discards backend Set-Cookie headers per call.
         try:
             async with httpx.AsyncClient(
