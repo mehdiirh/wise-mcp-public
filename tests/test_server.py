@@ -20,7 +20,7 @@ async def rpc(client, method, params=None, token="alice", **kwargs):
     if token is not None:
         headers["Authorization"] = f"Bearer {token}"
     return await client.post(
-        "/mcp",
+        "/wise-mcp",
         json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params or {}},
         headers=headers,
         **kwargs,

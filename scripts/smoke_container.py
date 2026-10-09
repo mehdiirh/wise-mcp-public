@@ -48,7 +48,7 @@ class Backend(BaseHTTPRequestHandler):
 
 async def check():
     async def user(token):
-        async with Client("http://127.0.0.1:8000/mcp", auth=token) as client:
+        async with Client("http://127.0.0.1:8000/wise-mcp", auth=token) as client:
             tools = await client.list_tools()
             assert len(tools) == 23
             assert all(tool.annotations.readOnlyHint for tool in tools)
@@ -61,7 +61,7 @@ async def check():
     await asyncio.gather(user("alice-smoke"), user("bob-smoke"))
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "http://127.0.0.1:8000/mcp",
+            "http://127.0.0.1:8000/wise-mcp",
             json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"},
             headers={
                 "Authorization": "Bearer invalid-smoke",

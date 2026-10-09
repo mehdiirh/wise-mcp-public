@@ -61,7 +61,7 @@ def create_server(settings: Settings | None = None, *, client: WiseClient | None
 def create_app(settings: Settings | None = None, *, client: WiseClient | None = None):
     settings = settings or Settings()
     return create_server(settings, client=client).http_app(
-        path="/mcp",
+        path="/wise-mcp",
         stateless_http=True,
         json_response=True,
         host_origin_protection=True,

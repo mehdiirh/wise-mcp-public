@@ -16,7 +16,7 @@ Defaults work against `https://api.wise.ad/api`. No shared API key or MCP secret
 is needed. Each client supplies its **own Wise token** in the connection's
 `Authorization: Bearer <WISE_TOKEN>` header.
 
-- MCP URL: `http://127.0.0.1:8080/mcp`
+- MCP URL: `http://127.0.0.1:8080/wise-mcp`
 - Transport: Streamable HTTP (stateless, JSON responses)
 - Health: `/healthz` (unauthenticated liveness only; does not call Wise)
 
@@ -58,7 +58,7 @@ and secret-storage syntax varies by client):
 {
   "mcpServers": {
     "wise-public": {
-      "url": "http://127.0.0.1:8080/mcp",
+      "url": "http://127.0.0.1:8080/wise-mcp",
       "headers": {"Authorization": "Bearer <your Wise token>"}
     }
   }
@@ -75,7 +75,7 @@ from fastmcp import Client
 
 
 async def main():
-    async with Client("http://127.0.0.1:8080/mcp", auth=os.environ["WISE_TOKEN"]) as client:
+    async with Client("http://127.0.0.1:8080/wise-mcp", auth=os.environ["WISE_TOKEN"]) as client:
         result = await client.call_tool("get_user_summary", {})
         print(result.structured_content)
 
@@ -187,7 +187,7 @@ add the exact public MCP hostname to `WISE_ALLOWED_HOSTS`, and preserve the
 credentials. For an existing Nginx TLS virtual host:
 
 ```nginx
-location /mcp {
+location /wise-mcp {
     proxy_pass http://127.0.0.1:8080;
     proxy_http_version 1.1;
     proxy_set_header Host $host;
